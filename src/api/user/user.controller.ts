@@ -61,3 +61,59 @@ export const UserSignUp = async (
     ErrorResponse(error, res);
   }
 };
+
+export const UserUpdate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const reqData = req.body;
+
+    const findExitingUser = await pool.query(
+      `SELECT * from USERS WHERE id=$1`,
+      [reqData.id]
+    );
+    if (findExitingUser.rows.length === 0) {
+      return ErrorResponse(
+        {
+          message: "User with this id does not exists",
+          statusCode: 404,
+        },
+        res
+      );
+    }
+    let query = "";
+    let values = [];
+    if (findExitingUser.rows[0].role === "admin") {
+      query = `UPDATE USERS SET name=$1,email=$2,mobilenumber=$3,country=$4,state=$5,city=$6,pincode=$7,address=$8,updated_at = CURRENT_TIMESTAMP WHERE id=$9 RETURNING *`;
+      values = [
+        reqData.name,
+        reqData.email,
+        reqData.mobilenumber,
+        reqData.country,
+        reqData.state,
+        reqData.city,
+        reqData.pincode,
+        reqData.address,
+        reqData.id,
+      ];
+    }
+    if (findExitingUser.rows[0].role === "teacher") {
+      query = `UPDATE USERS SET name=$1,email=$2,mobilenumber=$3,country=$4,state=$5,city=$6,pincode=$7,address=$8,updated_at = CURRENT_TIMESTAMP WHERE id=$9 RETURNING *`;
+      values = [
+        reqData.name,
+        reqData.email,
+        reqData.mobilenumber,
+        reqData.country,
+        reqData.state,
+        reqData.city,
+        reqData.pincode,
+        reqData.address,
+        reqData.id,
+      ];
+    }
+  } catch (error) {
+    ErrorResponse(error, res);
+  }
+};
