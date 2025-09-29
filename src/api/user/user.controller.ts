@@ -25,7 +25,20 @@ export const UserSignUp = async (
       address,
       role,
     } = validatedData;
+    const findExitingUser = await pool.query(
+      `SELECT * from USERS WHERE username=$1`,
+      [username]
+    );
 
+    if (findExitingUser.rows.length > 0) {
+      return ErrorResponse(
+        {
+          message: "User with this username already exists",
+          statusCode: 400,
+        },
+        res
+      );
+    }
     const result = await pool.query(
       `INSERT INTO USERS (name, username, email, mobilenumber, country, state, city, pincode, address, role)
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
